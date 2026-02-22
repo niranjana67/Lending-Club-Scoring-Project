@@ -1,0 +1,85 @@
+resources:
+  jobs:
+    Loan_Score_Job:
+      name: Loan_Score_DAB_Job
+      tasks:
+        - task_key: customer_bronze
+          notebook_task:
+            notebook_path: ../../src/Bronze/Customers_bronze.ipynb
+            source: WORKSPACE
+        - task_key: customer_silver_cleaned
+          depends_on:
+            - task_key: customer_bronze
+          notebook_task:
+            notebook_path: ../../src/Silver_cleaned/Customer_cleaned.ipynb
+            source: WORKSPACE
+        - task_key: customer_silver_enriched
+          depends_on:
+            - task_key: customer_silver_cleaned
+          notebook_task:
+            notebook_path: ../../src/Silver_enriched/Customer_enriched.ipynb
+            source: WORKSPACE
+        - task_key: loan_defaulter_bronze
+          notebook_task:
+            notebook_path: ../../src/Bronze/LoanDefaulter_bronze.ipynb
+            source: WORKSPACE
+        - task_key: loan_defaulter_silver_cleaned
+          depends_on:
+            - task_key: loan_defaulter_bronze
+          notebook_task:
+            notebook_path: ../../src/Silver_cleaned/LoansDefaulter_cleaned.ipynb
+            source: WORKSPACE
+        - task_key: loan_defaulter_delinq_enriched
+          depends_on:
+            - task_key: loan_defaulter_silver_cleaned
+          notebook_task:
+            notebook_path: ../../src/Silver_enriched/LoansDefaulterDelinq_enriched.ipynb
+            source: WORKSPACE
+        - task_key: loan_defaulter_publicRec_enriched
+          depends_on:
+            - task_key: loan_defaulter_silver_cleaned
+          notebook_task:
+            notebook_path: ../../src/Silver_enriched/LoansDefaulterPublicRecord_enriched.ipynb
+            source: WORKSPACE
+        - task_key: final_bad_customer_gold
+          depends_on:
+            - task_key: loan_defaulter_publicRec_enriched
+            - task_key: loan_defaulter_delinq_enriched
+            - task_key: customer_silver_enriched
+          notebook_task:
+            notebook_path: ../../src/Gold/final_bad_customers.ipynb
+            source: WORKSPACE
+        - task_key: loan_repayment_bronze
+          notebook_task:
+            notebook_path: ../../src/Bronze/LoanRepayment_bronze.ipynb
+            source: WORKSPACE
+        - task_key: loan_repayment_silver_cleaned
+          depends_on:
+            - task_key: loan_repayment_bronze
+          notebook_task:
+            notebook_path: ../../src/Silver_cleaned/LoansRepayment_cleaned.ipynb
+            source: WORKSPACE
+        - task_key: loans_bronze
+          notebook_task:
+            notebook_path: ../../src/Bronze/Loans_bronze.ipynb
+            source: WORKSPACE
+        - task_key: loans_silver_cleaned
+          depends_on:
+            - task_key: loans_bronze
+          notebook_task:
+            notebook_path: ../../src/Silver_cleaned/Loans_cleaned.ipynb
+            source: WORKSPACE
+        - task_key: final_loan_score_gold
+          depends_on:
+            - task_key: loan_repayment_silver_cleaned
+            - task_key: loan_defaulter_publicRec_enriched
+            - task_key: customer_silver_enriched
+            - task_key: final_bad_customer_gold
+            - task_key: loans_silver_cleaned
+            - task_key: loan_defaulter_delinq_enriched
+          notebook_task:
+            notebook_path: ../../src/Gold/Scoring_Logic.ipynb
+            source: WORKSPACE
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
