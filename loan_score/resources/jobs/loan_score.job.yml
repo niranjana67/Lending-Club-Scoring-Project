@@ -1,7 +1,7 @@
 resources:
   jobs:
     Loan_Score_Job:
-      name: Loan_Score_DAB_Job
+      name: Loan_Score_DABJob
       tasks:
         - task_key: customer_bronze
           notebook_task:
